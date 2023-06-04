@@ -4,7 +4,7 @@ const PORT = 5500;
 const mysql = require('mysql');
 require("dotenv").config();
 app.use(express.static("public"));
-
+app.use(express.json()); 
 // Povezava z bazo
 const connection = mysql.createConnection({
   host: process.env.MYSQL_HOST,
@@ -28,13 +28,6 @@ connection.connect((err) => {
   });
 });
 
-
-
-
-
-
-
-
 // Endpoints
 app.get("/api/mediana/get", (req, res) => {
   const query = "SELECT MEDIANA FROM tabela ORDER BY CREATED_AT DESC";
@@ -49,118 +42,50 @@ app.get("/api/mediana/get", (req, res) => {
     res.json(result.map(row => row.MEDIANA));
   });
 });
+// ...
 
 app.post("/api/mediana/post", (req, res) => {
-  console.log(req.body)
-  const body = req.body.stevilke;
+  console.log(req.body);
+  const stevilke = req.body.stevilke;
   const timestamp = new Date().toISOString().slice(0, 19).replace('T', ' ');
-  // Ce ni REQ.BODY === {json: {MEDIANA: 1}}
+
   if (!stevilke) {
-    req.status(400).send("Ni podanih števil");
+    res.status(400).send("Ni podanih števil");
     return;
   } else {
-    
-     const numbers = median(stevilke);
+    const numbers = stevilke.split(',').map(Number); // Split the string and convert to an array of numbers
 
-  function median(numbers) {
+    function median(numbers) {
       const sorted = Array.from(numbers).sort((a, b) => a - b);
       const middle = Math.floor(sorted.length / 2);
-  
+
       if (sorted.length % 2 === 0) {
-          return (sorted[middle - 1] + sorted[middle]) / 2;
+        return (sorted[middle - 1] + sorted[middle]) / 2;
       }
-  
+
       return sorted[middle];
+    }
+
+    const result = median(numbers);
+    console.log('Median:', result);
+
+    const query = `INSERT INTO tabela (CREATED_AT, MEDIANA) VALUES ('${timestamp}', ${result})`; // Fix the query
+
+    connection.query(query, (err, result) => {
+      if (err) {
+        console.error("Napaka pri izvajanju poizvedbe: ", err);
+        res.status(500).send("Napaka pri izvajanju poizvedbe");
+        return;
+      }
+
+      res.status(200).send("Podatki uspešno vstavljeni"); // Return a success response
+    });
   }
-    const query = `INSERT INTO tabela(CREATED_AT, MEDIANA) values('${timestamp}',${sorted[middle]})`;
-  };
 });
+
+// ...
 
 
 app.listen(PORT, () => {
   console.log(`Strežnik je pognan na http://localhost:${PORT}`);
 });
-
-
-
-//
-
-
-
-//
-
-
-
-
-
-
-
-
-
-
-/*
-
-1
-
-
-
-
-
-1
-
-
-
-
-
-app.get("/api/mediana/get/", (req, res) => {
-    const query = "SELECT MEDIANA FROM tabela ORDER BY CREATED_AT DESC";
-
-    conn.query(query, (err, result) => {
-      if (err) {
-        console.error("Napaka pri izvajanju poizvedbe: ", err);
-        res.status(500).send("Napaka pri izvajanju poizvedbe");
-        return;
-      }
-
-      const mediane = result.map(row => row.MEDIANA);
-      res.send(`MEDIANA: ${mediane.join(", ")}`);
-    });
-  });
-
-
-
-//tole rabiš za POST!
-//  app.use(express.json());
-
-app.listen(
-    PORT,
-    () => console.log(`Buden sem na http://localhost:${PORT}`)
-);
-//post
-app.post("/api/mediana/calculate", (req, res) => {
-    const { numbers } = req.body;
-
-    const sortedNumbers = Array.from(numbers).sort((a, b) => a - b);
-    const middle = Math.floor(sortedNumbers.length / 2);
-
-    let calculatedMedian;
-    if (sortedNumbers.length % 2 === 0) {
-      calculatedMedian = (sortedNumbers[middle - 1] + sortedNumbers[middle]) / 2;
-    } else {
-      calculatedMedian = sortedNumbers[middle];
-    }
-
-    const query = "INSERT INTO tabela (CREATED_AT, MEDIANA) VALUES (?, ?)";
-    const values = [new Date(), calculatedMedian];
-
-    conn.query(query, values, (err, result) => {
-      if (err) {
-        console.error("Napaka pri izvajanju poizvedbe: ", err);
-        res.status(500).send("Napaka pri izvajanju poizvedbe");
-        return;
-      }
-
-      res.send("Podatki uspešno vstavljeni");
-    });
-  });
-  */
