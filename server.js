@@ -53,7 +53,7 @@ app.post("/api/mediana/post", (req, res) => {
     res.status(400).send("Ni podanih števil");
     return;
   } else {
-    const numbers = stevilke.split(',').map(Number); // Split the string and convert to an array of numbers
+    const numbers = stevilke.split(',').map(Number);
 
     function median(numbers) {
     const sorted = Array.from(numbers).sort((a, b) => a - b);
@@ -68,7 +68,7 @@ app.post("/api/mediana/post", (req, res) => {
     const result = median(numbers);
     console.log('Median:', result);
 
-    const query = `INSERT INTO tabela (CREATED_AT, MEDIANA) VALUES ('${timestamp}', ${result})`; // Fix the query
+    const query = `INSERT INTO tabela (CREATED_AT, MEDIANA) VALUES ('${timestamp}', ${result})`; 
 
     connection.query(query, (err, result) => {
     if (err) {
@@ -77,7 +77,7 @@ app.post("/api/mediana/post", (req, res) => {
     return;
     }
 
-    res.status(200).send("Podatki uspešno vstavljeni"); // Return a success response
+    res.status(200).send("Podatki uspešno vstavljeni"); 
   });
  }
 });
