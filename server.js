@@ -21,8 +21,8 @@ connection.connect((err) => {
   console.log('Povezava z bazo je vzpostavljena');
   connection.query("CREATE TABLE IF NOT EXISTS tabela (ID INT AUTO_INCREMENT PRIMARY KEY, CREATED_AT DATETIME, MEDIANA INT)", (err, result) => {
     if (err) {
-      console.error("Napaka pri ustvarjanju tabele: ", err);
-      return;
+    console.error("Napaka pri ustvarjanju tabele: ", err);
+    return;
     }
     console.log("Ustvarjena tabela");
   });
@@ -30,13 +30,13 @@ connection.connect((err) => {
 
 // Endpoints
 app.get("/api/mediana/get", (req, res) => {
-  const query = "SELECT MEDIANA FROM tabela ORDER BY CREATED_AT DESC";
+  const query = "SELECT MEDIANA FROM tabela ORDER BY CREATED_AT DESC LIMIT 25";
 
   connection.query(query, (err, result) => {
     if (err) {
-      console.error("Napaka pri izvajanju poizvedbe: ", err);
-      res.status(500).send("Napaka pri izvajanju poizvedbe");
-      return;
+    console.error("Napaka pri izvajanju poizvedbe: ", err);
+    res.status(500).send("Napaka pri izvajanju poizvedbe");
+    return;
     }
 
     res.json(result.map(row => row.MEDIANA));
@@ -56,14 +56,13 @@ app.post("/api/mediana/post", (req, res) => {
     const numbers = stevilke.split(',').map(Number); // Split the string and convert to an array of numbers
 
     function median(numbers) {
-      const sorted = Array.from(numbers).sort((a, b) => a - b);
-      const middle = Math.floor(sorted.length / 2);
+    const sorted = Array.from(numbers).sort((a, b) => a - b);
+    const middle = Math.floor(sorted.length / 2);
 
-      if (sorted.length % 2 === 0) {
-        return (sorted[middle - 1] + sorted[middle]) / 2;
-      }
-
-      return sorted[middle];
+    if (sorted.length % 2 === 0) {
+    return (sorted[middle - 1] + sorted[middle]) / 2;
+    }
+    return sorted[middle];
     }
 
     const result = median(numbers);
@@ -72,20 +71,17 @@ app.post("/api/mediana/post", (req, res) => {
     const query = `INSERT INTO tabela (CREATED_AT, MEDIANA) VALUES ('${timestamp}', ${result})`; // Fix the query
 
     connection.query(query, (err, result) => {
-      if (err) {
-        console.error("Napaka pri izvajanju poizvedbe: ", err);
-        res.status(500).send("Napaka pri izvajanju poizvedbe");
-        return;
-      }
+    if (err) {
+    console.error("Napaka pri izvajanju poizvedbe: ", err);
+    res.status(500).send("Napaka pri izvajanju poizvedbe");
+    return;
+    }
 
-      res.status(200).send("Podatki uspešno vstavljeni"); // Return a success response
-    });
-  }
+    res.status(200).send("Podatki uspešno vstavljeni"); // Return a success response
+  });
+ }
 });
 
-// ...
-
-
 app.listen(PORT, () => {
-  console.log(`Strežnik je pognan na http://localhost:${PORT}`);
+console.log(`Strežnik je pognan na http://localhost:${PORT}`);
 });
